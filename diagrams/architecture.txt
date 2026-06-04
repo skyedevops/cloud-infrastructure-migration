@@ -1,0 +1,52 @@
+Cloud Infrastructure Migration & Optimization Architecture
+
+[User Traffic]
+        |
+        v
+[Amazon CloudFront] <-> [S3 Static Assets]
+        |
+        v
+[Application Load Balancer] 
+        /                   \
+[EC2 Auto Scaling Group]   [EC2 Auto Scaling Group]
+        |                           |
+        v                           v
+[Web Server Fleet]         [Worker Fleet (Optional)]
+        |                           |
+        +---------------+-----------+
+                      |
+                      v
+            [Amazon ElastiCache (Redis)]
+                      |
+                      v
+            [Amazon RDS (Multi-AZ)]
+                      |
+                      v
+            [S3 Data Lake / Backups]
+                      |
+                      v
+            [Amazon Glacier (Long-term Archive)]
+
+[Monitoring & Alerting]
+        |
+        v
+[Amazon CloudWatch] <-- Metrics & Logs from all services
+        |
+        v
+[CloudWatch Dashboards] [CloudWatch Alarms] -> [SNS Notifications]
+
+[CI/CD Pipeline]
+        |
+        v
+[GitHub Actions] -> [Terraform Plan/Apply] -> [AWS]
+        |
+        v
+[Automated Testing] -> [Staging] -> [Production]
+
+[Security]
+        |
+        v
+[IAM Roles & Policies] [Security Groups] [NACLs] [WAF] [Shield]
+        |
+        v
+[Encryption: KMS, SSL/TLS, S3 SSE, RDS Encryption]
