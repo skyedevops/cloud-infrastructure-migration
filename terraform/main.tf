@@ -6,6 +6,15 @@ terraform {
       version = "~> 4.0"
     }
   }
+
+  backend "s3" {
+    # Configure via -backend-config=... in CI, e.g.:
+    #   bucket         = "my-tf-state"
+    #   key            = "cloud-migration/terraform.tfstate"
+    #   region         = "us-east-1"
+    #   dynamodb_table = "my-tf-locks"
+    #   encrypt        = true
+  }
 }
 
 provider "aws" {
@@ -14,39 +23,15 @@ provider "aws" {
   region = var.aws_region
 }
 
-variable "aws_region" {
-  description = "AWS region to deploy resources"
-  type        = string
-  default     = "us-east-1"
-}
-
-variable "vpc_cidr" {
-  description = "CIDR block for the VPC"
-  type        = string
-  default     = "10.0.0.0/16"
-}
-
-variable "public_subnet_cidrs" {
-  description = "List of public subnet CIDR blocks"
-  type        = list(string)
-  default     = ["10.0.1.0/24", "10.0.2.0/24"]
-}
-
-variable "private_subnet_cidrs" {
-  description = "List of private subnet CIDR blocks"
-  type        = list(string)
-  default     = ["10.0.101.0/24", "10.0.102.0/24"]
-}
-
 # VPC Resource
 resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
   enable_dns_hostnames = true
   enable_dns_support   = true
 
-  tags = {
-    Name = "cloud-migration-vpc"
-  }
+  tags = merge(var.tags, {
+    Name = "${var.project_name}-vpc"
+  })
 }
 
 # Internet Gateway
@@ -60,28 +45,30 @@ resource "aws_internet_gateway" "main" {
 
 # Public Subnets
 resource "aws_subnet" "public" {
-  for_each = toset(var.public_subnet_cidrs)
+  count = length(var.public_subnet_cidrs)
 
   vpc_id                  = aws_vpc.main.id
-  cidr_block              = each.value
-  availability_zone       = data.aws_availability_zones.available.names[element(length(var.public_subnet_cidrs) > 0 ? index(var.public_subnet_cidrs, each.value) : 0, length(var.private_subnet_cidrs) > 0 ? index(var.private_subnet_cidrs, each.value) : 0)]
+  cidr_block              = var.public_subnet_cidrs[count.index]
+  availability_zone       = data.aws_availability_zones.available.names[count.index]
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "cloud-migration-public-subnet-${each.key}"
+    Name = "cloud-migration-public-subnet-${count.index}"
+    Tier = "public"
   }
 }
 
 # Private Subnets
 resource "aws_subnet" "private" {
-  for_each = toset(var.private_subnet_cidrs)
+  count = length(var.private_subnet_cidrs)
 
   vpc_id            = aws_vpc.main.id
-  cidr_block        = each.value
-  availability_zone = data.aws_availability_zones.available.names[element(length(var.public_subnet_cidrs) > 0 ? index(var.public_subnet_cidrs, each.value) : 0, length(var.private_subnet_cidrs) > 0 ? index(var.private_subnet_cidrs, each.value) : 0)]
+  cidr_block        = var.private_subnet_cidrs[count.index]
+  availability_zone = data.aws_availability_zones.available.names[count.index]
 
   tags = {
-    Name = "cloud-migration-private-subnet-${each.key}"
+    Name = "cloud-migration-private-subnet-${count.index}"
+    Tier = "private"
   }
 }
 
@@ -101,30 +88,10 @@ resource "aws_route_table" "public" {
 
 # Associate Public Subnets with Route Table
 resource "aws_route_table_association" "public" {
-  for_each = aws_subnet.public
+  count = length(aws_subnet.public)
 
-  subnet_id      = each.value.id
+  subnet_id      = aws_subnet.public[count.index].id
   route_table_id = aws_route_table.public.id
-}
-
-# Elastic IP for NAT Gateway (if needed for private subnets internet access)
-# Note: For a simple migration, we might not need NAT if private subnets don't require internet access.
-# We'll skip NAT for now to keep it simple and cost-effective.
-
-# Outputs
-output "vpc_id" {
-  description = "ID of the VPC"
-  value       = aws_vpc.main.id
-}
-
-output "public_subnet_ids" {
-  description = "IDs of the public subnets"
-  value       = aws_subnet.public[*].id
-}
-
-output "private_subnet_ids" {
-  description = "IDs of the private subnets"
-  value       = aws_subnet.private[*].id
 }
 
 # Data source for availability zones

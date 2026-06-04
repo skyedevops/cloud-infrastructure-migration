@@ -1,0 +1,58 @@
+# Copy this file to terraform/terraform.tfvars.prod and fill in your values.
+# Sensitive values (e.g. db_password) should be set via TF_VAR_db_password env var.
+
+aws_region     = "us-east-1"
+project_name   = "cloud-migration"
+environment    = "prod"
+
+# Networking
+vpc_cidr              = "10.0.0.0/16"
+public_subnet_cidrs   = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+private_subnet_cidrs  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
+enable_nat_gateway    = true
+
+# Access: TIGHTEN in production. Replace with your office/VPN CIDR.
+allowed_cidr_blocks = ["0.0.0.0/0"]
+ssh_cidr_blocks     = ["10.0.0.0/8"]  # Use a bastion / SSM only
+
+# EC2
+instance_type         = "t3.small"
+key_name              = ""
+asg_min_size          = 2
+asg_max_size          = 10
+asg_desired_capacity  = 3
+enable_instance_refresh = true
+
+# RDS
+db_engine            = "mysql"
+db_engine_version    = "8.0"
+db_instance_class    = "db.t3.small"
+db_allocated_storage = 50
+db_name              = "migrationdb"
+db_username          = "admin"
+# db_password  => set via TF_VAR_db_password env var (or Secrets Manager)
+db_multi_az          = true
+
+# ElastiCache
+elasticache_node_type       = "cache.t3.small"
+elasticache_num_cache_nodes = 2  # >1 enables automatic failover
+
+# Static assets
+enable_static_assets      = true
+static_assets_bucket_name = ""
+
+# HTTPS
+domain_name = "example.com"  # set this to enable ACM + HTTPS listener
+
+# Alerting
+alert_email = "ops-alerts@example.com"
+
+# Backups bucket
+enable_backups_bucket = true
+
+# Common tags
+tags = {
+  Project   = "cloud-migration"
+  ManagedBy = "terraform"
+  CostCenter = "platform"
+}

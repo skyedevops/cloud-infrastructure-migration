@@ -14,6 +14,14 @@ resource "aws_security_group" "alb_sg" {
     cidr_blocks = var.allowed_cidr_blocks
   }
 
+  ingress {
+    description = "HTTPS"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = var.allowed_cidr_blocks
+  }
+
   egress {
     description = "All outbound"
     from_port   = 0
@@ -22,9 +30,9 @@ resource "aws_security_group" "alb_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = {
-    Name = "cloud-migration-alb-sg"
-  }
+  tags = merge(var.tags, {
+    Name = "${var.project_name}-alb-sg"
+  })
 }
 
 # Security Group for EC2 instances
@@ -34,10 +42,10 @@ resource "aws_security_group" "ec2_sg" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    description = "HTTP from ALB"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
+    description     = "HTTP from ALB"
+    from_port       = 80
+    to_port         = 80
+    protocol        = "tcp"
     security_groups = [aws_security_group.alb_sg.id]
   }
 
@@ -46,7 +54,7 @@ resource "aws_security_group" "ec2_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]  # In production, restrict this!
+    cidr_blocks = var.ssh_cidr_blocks # In production, restrict this!
   }
 
   egress {
@@ -57,9 +65,9 @@ resource "aws_security_group" "ec2_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = {
-    Name = "cloud-migration-ec2-sg"
-  }
+  tags = merge(var.tags, {
+    Name = "${var.project_name}-ec2-sg"
+  })
 }
 
 # Security Group for RDS
@@ -69,10 +77,10 @@ resource "aws_security_group" "rds_sg" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    description = "MySQL from EC2"
-    from_port   = 3306
-    to_port     = 3306
-    protocol    = "tcp"
+    description     = "MySQL from EC2"
+    from_port       = 3306
+    to_port         = 3306
+    protocol        = "tcp"
     security_groups = [aws_security_group.ec2_sg.id]
   }
 
@@ -84,9 +92,9 @@ resource "aws_security_group" "rds_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = {
-    Name = "cloud-migration-rds-sg"
-  }
+  tags = merge(var.tags, {
+    Name = "${var.project_name}-rds-sg"
+  })
 }
 
 # Security Group for ElastiCache
@@ -96,10 +104,10 @@ resource "aws_security_group" "elasticache_sg" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
-    description = "Redis from EC2"
-    from_port   = 6379
-    to_port     = 6379
-    protocol    = "tcp"
+    description     = "Redis from EC2"
+    from_port       = 6379
+    to_port         = 6379
+    protocol        = "tcp"
     security_groups = [aws_security_group.ec2_sg.id]
   }
 
@@ -111,7 +119,7 @@ resource "aws_security_group" "elasticache_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags = {
-    Name = "cloud-migration-elasticache-sg"
-  }
+  tags = merge(var.tags, {
+    Name = "${var.project_name}-elasticache-sg"
+  })
 }

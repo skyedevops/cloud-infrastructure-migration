@@ -1,0 +1,43 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+tfplan
+tfplan-destroy
+crash.log
+crash.*.log
+
+# Local tfvars with real secrets
+terraform.tfvars
+terraform.tfvars.*
+!terraform.tfvars.*.example
+!variables.tf
+!outputs.tf
+
+# IDE
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# OS
+Thumbs.db
+
+# Node / app (for deploy-app workflow)
+node_modules/
+dist/
+build/
+*.log
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# Tests / coverage
+coverage/
+*.out

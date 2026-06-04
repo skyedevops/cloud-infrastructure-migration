@@ -1,0 +1,57 @@
+# Copy this file to terraform/terraform.tfvars.dev and fill in your values.
+# Sensitive values (e.g. db_password) should be set via TF_VAR_db_password env var.
+
+aws_region     = "us-east-1"
+project_name   = "cloud-migration"
+environment    = "dev"
+
+# Networking
+vpc_cidr              = "10.0.0.0/16"
+public_subnet_cidrs   = ["10.0.1.0/24", "10.0.2.0/24"]
+private_subnet_cidrs  = ["10.0.101.0/24", "10.0.102.0/24"]
+enable_nat_gateway    = true
+
+# Access (tighten in production!)
+allowed_cidr_blocks = ["0.0.0.0/0"]
+ssh_cidr_blocks     = ["0.0.0.0/0"]
+
+# EC2
+instance_type         = "t3.micro"
+key_name              = ""
+asg_min_size          = 2
+asg_max_size          = 4
+asg_desired_capacity  = 2
+enable_instance_refresh = true
+
+# RDS
+db_engine            = "mysql"
+db_engine_version    = "8.0"
+db_instance_class    = "db.t3.micro"
+db_allocated_storage = 20
+db_name              = "migrationdb"
+db_username          = "admin"
+# db_password  => set via TF_VAR_db_password env var
+db_multi_az          = false  # Set true for staging/prod
+
+# ElastiCache
+elasticache_node_type        = "cache.t3.micro"
+elasticache_num_cache_nodes  = 1
+
+# Static assets
+enable_static_assets      = true
+static_assets_bucket_name = ""
+
+# Optional HTTPS
+domain_name = ""
+
+# Alerting
+alert_email = ""
+
+# Backups bucket
+enable_backups_bucket = true
+
+# Common tags
+tags = {
+  Project   = "cloud-migration"
+  ManagedBy = "terraform"
+}
