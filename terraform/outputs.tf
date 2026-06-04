@@ -72,3 +72,18 @@ output "sns_alerts_topic_arn" {
   description = "ARN of the SNS topic for CloudWatch alarm notifications"
   value       = var.alert_email != "" ? aws_sns_topic.alerts[0].arn : null
 }
+
+output "db_secret_arn" {
+  description = "ARN of the Secrets Manager secret holding the DB credentials"
+  value       = local.db_secret_arn
+}
+
+output "github_actions_role_arn" {
+  description = "ARN of the IAM role assumed by GitHub Actions via OIDC"
+  value       = aws_iam_role.github_deploy.arn
+}
+
+output "waf_web_acl_arn" {
+  description = "ARN of the WAFv2 web ACL attached to the ALB"
+  value       = var.enable_waf ? aws_wafv2_web_acl.alb[0].arn : null
+}

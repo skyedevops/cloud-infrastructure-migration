@@ -1,0 +1,25 @@
+{
+  "name": "cloud-migration-sample-app",
+  "version": "1.0.0",
+  "description": "Sample 3-tier Node.js app for the cloud-migration project",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test test/",
+    "build": "echo 'no build step (static)'"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "ioredis": "^5.4.1",
+    "mysql2": "^3.10.0",
+    "pino": "^9.2.0",
+    "pino-http": "^10.1.0"
+  },
+  "devDependencies": {
+    "supertest": "^7.0.0"
+  }
+}

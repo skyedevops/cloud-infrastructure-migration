@@ -56,11 +56,10 @@ resource "aws_iam_role_policy" "s3_read_static" {
   })
 }
 
-# Optional: read DB password from Secrets Manager
+# Read DB password from Secrets Manager (managed by secrets.tf unless overridden)
 resource "aws_iam_role_policy" "secrets_read" {
-  count = var.db_password_secret_arn != "" ? 1 : 0
-  name  = "${var.project_name}-secrets-read"
-  role  = aws_iam_role.ec2_role.id
+  name = "${var.project_name}-secrets-read"
+  role = aws_iam_role.ec2_role.id
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -68,7 +67,7 @@ resource "aws_iam_role_policy" "secrets_read" {
       {
         Effect   = "Allow"
         Action   = ["secretsmanager:GetSecretValue"]
-        Resource = [var.db_password_secret_arn]
+        Resource = [local.db_secret_arn]
       }
     ]
   })

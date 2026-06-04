@@ -190,3 +190,51 @@ variable "enable_backups_bucket" {
   type        = bool
   default     = true
 }
+
+variable "enable_waf" {
+  description = "Attach a WAFv2 web ACL to the ALB"
+  type        = bool
+  default     = true
+}
+
+variable "enable_route53" {
+  description = "Create Route53 records pointing to the ALB and CloudFront distribution"
+  type        = bool
+  default     = false
+}
+
+variable "route53_zone_id" {
+  description = "Route53 hosted zone ID for var.domain_name (required if enable_route53=true)"
+  type        = string
+  default     = ""
+}
+
+variable "enable_aws_backup" {
+  description = "Create an AWS Backup plan that snapshots RDS nightly"
+  type        = bool
+  default     = true
+}
+
+variable "github_org" {
+  description = "GitHub organization/user that owns the repo (used for OIDC trust)"
+  type        = string
+  default     = "skyedevops"
+}
+
+variable "github_repo" {
+  description = "GitHub repository name (used for OIDC trust)"
+  type        = string
+  default     = "cloud-infrastructure-migration"
+}
+
+variable "tf_state_bucket" {
+  description = "S3 bucket where Terraform state is stored (used by the deploy role policy)"
+  type        = string
+  default     = "my-tf-state"
+}
+
+variable "tf_locks_table" {
+  description = "DynamoDB table used for Terraform state locking (used by the deploy role policy)"
+  type        = string
+  default     = "my-tf-locks"
+}
